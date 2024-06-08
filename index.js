@@ -67,10 +67,21 @@ return res.status(401).send({message: 'unauthorized access'})
 }
 
 
+const verifyAdmin= async(req,res,next)=>{
+  const email= req.decoded.email
+  const query ={email: email}
+  const user= await userCollection.findOne(query)
+  const isAdmin= user?.role === 'admin'
+  if(!isAdmin){
+    return res.status(403).send({message: 'forbidden access'})
+  }
+  next()
+}
+
 
 // user related apis
 
-app.get('/users',verifyToken, async (req,res)=>{
+app.get('/users',verifyToken,verifyAdmin, async (req,res)=>{
   const result= await userCollection.find().toArray();
   
   res.send(result)
@@ -89,7 +100,7 @@ app.get('/users',verifyToken, async (req,res)=>{
     })
 
 
-    app.delete('/users/:id',async(req,res)=>{
+    app.delete('/users/:id', verifyToken,verifyAdmin,async(req,res)=>{
       const id = req.params.id
       const query= {_id: new ObjectId(id)}
       const result= await userCollection.deleteOne(query)
@@ -98,7 +109,7 @@ app.get('/users',verifyToken, async (req,res)=>{
 
 // Admin apies
 
-app.patch('/users/admin/:id',  async(req,res)=>{
+app.patch('/users/admin/:id', verifyToken,verifyAdmin, async(req,res)=>{
   const id = req.params.id
   const filter ={ _id : new ObjectId(id)}
   const updatedDoc ={
@@ -110,7 +121,50 @@ app.patch('/users/admin/:id',  async(req,res)=>{
   res.send(result)
 })
 
+// admin check
+app.get('/user/admin/:email',verifyToken,async(req,res)=>{
+  const email= req.params.email
+  if(email !== req.decoded.email){
+    return res.status(403).send({message: 'forbidden access'})
+  }
+  const query={email:email};
+  const user= await userCollection.findOne(query)
+  let admin=false;
+  if(user){
+    admin = user?.role === 'admin';
+  
+  }
+  res.send({admin})
+  })
 
+  // agent api
+app.patch('/users/agent/:id', verifyToken,verifyAdmin, async(req,res)=>{
+  const id = req.params.id
+  const filter ={ _id : new ObjectId(id)}
+  const updatedDoc ={
+    $set:{
+      role:'agent'
+    }
+  }
+  const result =await userCollection.updateOne(filter,updatedDoc)
+  res.send(result)
+})
+
+// agent check
+app.get('/user/agent/:email',verifyToken,async(req,res)=>{
+  const email= req.params.email
+  if(email !== req.decoded.email){
+    return res.status(403).send({message: 'forbidden access'})
+  }
+  const query={email:email};
+  const user= await userCollection.findOne(query)
+  let agent=false;
+  if(user){
+    admin = user?.role === 'agent';
+  
+  }
+  res.send({agent})
+  })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
