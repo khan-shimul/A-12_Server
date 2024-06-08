@@ -38,13 +38,14 @@ async function run() {
 
 
 
-
-
-
-// Admin apies
-
-
-
+// jwt api
+app.post('/jwt',async(req,res)=>{
+  const user= req.body;
+  const token =jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{
+    expiresIn:'4h'
+  })
+  res.send({token})
+})
 
 
 // user related apis
@@ -74,6 +75,20 @@ app.get('/users', async (req,res)=>{
       const result= await userCollection.deleteOne(query)
       res.send(result)
     })
+
+// Admin apies
+
+app.patch('/users/admin/:id',  async(req,res)=>{
+  const id = req.params.id
+  const filter ={ _id : new ObjectId(id)}
+  const updatedDoc ={
+    $set:{
+      role:'admin'
+    }
+  }
+  const result =await userCollection.updateOne(filter,updatedDoc)
+  res.send(result)
+})
 
 
 
