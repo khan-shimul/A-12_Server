@@ -183,6 +183,12 @@ app.get('/user/agent/:email',verifyToken,async(req,res)=>{
 
   // property apis
 
+app.get('/property',async(req,res)=>{
+  const cursor =propertyCollection.find().sort({time: -1});
+  const result =await cursor.toArray()
+  res.send(result)
+})
+
   app.post('/property',verifyToken,verifyAgent, async(req,res)=>{
     const item = req.body
     const result = await propertyCollection.insertOne(item)
