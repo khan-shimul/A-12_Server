@@ -34,6 +34,7 @@ async function run() {
     // await client.connect();
 
     const userCollection =client.db('12RealEstate').collection('user')
+    const propertyCollection =client.db('12RealEstate').collection('property')
 
 
 
@@ -172,11 +173,21 @@ app.get('/user/agent/:email',verifyToken,async(req,res)=>{
   const user= await userCollection.findOne(query)
   let agent=false;
   if(user){
-    admin = user?.role === 'agent';
+    agent = user?.role === 'agent';
   
   }
   res.send({agent})
   })
+
+
+
+  // property apis
+
+  app.post('/property',verifyToken,verifyAgent, async(req,res)=>{
+    const item = req.body
+    const result = await propertyCollection.insertOne(item)
+    res.send(result)
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
