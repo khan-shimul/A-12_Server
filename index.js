@@ -183,18 +183,52 @@ app.get('/user/agent/:email',verifyToken,async(req,res)=>{
 
   // property apis
 
-app.get('/property',async(req,res)=>{
-  const cursor =propertyCollection.find().sort({time: -1});
+app.get('/property',verifyToken,async(req,res)=>{
+  const cursor =propertyCollection.find();
   const result =await cursor.toArray()
   res.send(result)
 })
 
-app.get('/property',async(req,res)=>{
+app.get('/propertu',verifyToken,verifyAgent,async(req,res)=>{
   const email = req.query.email
-  const query= {email:email}
+  const query= {agentEmail:email}
   const result =await propertyCollection.find(query).toArray()
   res.send(result)
 })
+// app.get('/property/:email',verifyToken,verifyAgent,async(req,res)=>{
+//   const email = req.params.email
+//   const query= {agentEmail:email}
+//   const result =await propertyCollection.find(query).toArray()
+//   res.send(result)
+// })
+
+
+// property verify
+app.patch('/property/verify/:id', verifyToken,verifyAdmin, async(req,res)=>{
+  const id = req.params.id
+  const filter ={ _id : new ObjectId(id)}
+  const updatedDoc ={
+    $set:{
+      isVerified:true
+    }
+  }
+  const result =await propertyCollection.updateOne(filter,updatedDoc)
+  res.send(result)
+})
+// property reject
+app.patch('/property/reject/:id', verifyToken,verifyAdmin, async(req,res)=>{
+  const id = req.params.id
+  const filter ={ _id : new ObjectId(id)}
+  const updatedDoc ={
+    $set:{
+      isVerified:'reject'
+    }
+  }
+  const result =await propertyCollection.updateOne(filter,updatedDoc)
+  res.send(result)
+})
+
+
 
 
   app.post('/property',verifyToken,verifyAgent, async(req,res)=>{
