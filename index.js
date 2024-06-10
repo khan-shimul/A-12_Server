@@ -189,6 +189,14 @@ app.get('/property',async(req,res)=>{
   res.send(result)
 })
 
+app.get('/property',async(req,res)=>{
+  const email = req.query.email
+  const query= {email:email}
+  const result =await propertyCollection.find(query).toArray()
+  res.send(result)
+})
+
+
   app.post('/property',verifyToken,verifyAgent, async(req,res)=>{
     const item = req.body
     const result = await propertyCollection.insertOne(item)
