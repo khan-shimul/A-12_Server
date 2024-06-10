@@ -182,6 +182,11 @@ app.get('/user/agent/:email',verifyToken,async(req,res)=>{
 
 
   // property apis
+  app.post('/property',verifyToken,verifyAgent, async(req,res)=>{
+    const item = req.body
+    const result = await propertyCollection.insertOne(item)
+    res.send(result)
+    })
 
 app.get('/property',verifyToken,async(req,res)=>{
   const cursor =propertyCollection.find();
@@ -228,14 +233,22 @@ app.patch('/property/reject/:id', verifyToken,verifyAdmin, async(req,res)=>{
   res.send(result)
 })
 
+// admin verified property
+app.get('/allproperty',verifyToken,async(req,res)=>{
+  const query = { isVerified:true };
+  const result = await propertyCollection.find(query).toArray();
+  res.send(result)
+})
 
+// delete
+app.delete('/property/:id',verifyToken,verifyAgent, async(req,res)=>{
+  const id = req.params.id
+  const query= {_id: new ObjectId(id)}
+  const result= await propertyCollection.deleteOne(query)
+  res.send(result)
+})
 
-
-  app.post('/property',verifyToken,verifyAgent, async(req,res)=>{
-    const item = req.body
-    const result = await propertyCollection.insertOne(item)
-    res.send(result)
-    })
+  
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
