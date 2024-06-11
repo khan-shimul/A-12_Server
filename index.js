@@ -259,7 +259,25 @@ app.get('/property/:id',async(req,res)=>{
 })
 
 
-
+app.put('/property/:id',async(req,res)=>{
+  const id=req.params.id
+  const filter={_id:new ObjectId(id)}
+  const options={upsert:true}
+  const updatedProperty=req.body
+  const property={
+    $set:{
+      propertyName:updatedProperty.propertyName, 
+     location:updatedProperty.location,
+     agentName:updatedProperty.agentName,
+     agentEmail:updatedProperty.agentEmail,
+     photo:updatedProperty.photo,
+     minPrice:updatedProperty.minPrice,
+     maxPrice:updatedProperty.maxPrice,
+    }
+  }
+const result=await propertyCollection.updateOne(filter,property,options)
+res.send(result)
+})
   
 
     // Send a ping to confirm a successful connection
