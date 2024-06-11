@@ -36,6 +36,7 @@ async function run() {
     const userCollection =client.db('12RealEstate').collection('user')
     const propertyCollection =client.db('12RealEstate').collection('property')
     const wishCollection = client.db("12RealEstate").collection('wish')
+    const reviewCollection = client.db("12RealEstate").collection('review')
 
 
 
@@ -287,7 +288,34 @@ app.post('/wishlist', async (req, res) => {
   res.send(result);
 });
 
+app.get('/wishlist/:userEmail' , async (req, res) => {
+  const email= req.params.userEmail;
+  const query = { userEmail: (email) }
+  const wishedProperty = await wishCollection.find(query).toArray();
+  res.send(wishedProperty);
+})
 
+app.delete('/wishlist/:id', async(req,res)=>{
+  const id = req.params.id
+  const query= {_id: new ObjectId(id)}
+  const result= await wishCollection.deleteOne(query)
+  res.send(result)
+})
+// review
+app.post('/review', async (req, res) => {
+  const review = req.body;
+  // console.log(review)
+  const result = await reviewCollection.insertOne(review);
+  res.send(result)
+});
+
+app.get('/review/:propertyId', async (req, res) => {
+  const id = req.params.propertyId;
+  // console.log(id)
+  const query = { propertyId: id };
+  const review = await reviewCollection.find(query).toArray();
+  res.send(review);
+});
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
