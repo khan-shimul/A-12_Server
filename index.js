@@ -35,7 +35,7 @@ async function run() {
 
     const userCollection =client.db('12RealEstate').collection('user')
     const propertyCollection =client.db('12RealEstate').collection('property')
-
+    const wishCollection = client.db("12RealEstate").collection('wish')
 
 
 
@@ -279,6 +279,15 @@ const result=await propertyCollection.updateOne(filter,property,options)
 res.send(result)
 })
   
+// wish
+app.post('/wishlist', async (req, res) => {
+  const  wishedProperty  = req.body;
+//  console.log(wishedProperty)
+  const result = await wishCollection.insertOne(wishedProperty);
+  res.send(result);
+});
+
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
