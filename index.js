@@ -309,6 +309,12 @@ app.post('/review', async (req, res) => {
   res.send(result)
 });
 
+app.get('/reviews', async (req, res) => {
+
+  const review = await reviewCollection.find().sort({time: -1}).toArray();
+  res.send(review);
+});
+
 app.get('/review/:propertyId', async (req, res) => {
   const id = req.params.propertyId;
   // console.log(id)
