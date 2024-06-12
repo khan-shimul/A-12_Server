@@ -323,6 +323,13 @@ app.get('/review/:propertyId', async (req, res) => {
   res.send(review);
 });
 
+app.get('/review/:userEmail' , async (req, res) => {
+  const email= req.params.userEmail;
+  const query = { userEmail: (email) }
+  const myReview = await reviewCollection.find(query).toArray();
+  res.send(myReview);
+})
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
