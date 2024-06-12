@@ -323,11 +323,17 @@ app.get('/review/:propertyId', async (req, res) => {
   res.send(review);
 });
 
-app.get('/review/:userEmail' , async (req, res) => {
+app.get('/reviews/:userEmail' , async (req, res) => {
   const email= req.params.userEmail;
   const query = { userEmail: (email) }
   const myReview = await reviewCollection.find(query).toArray();
   res.send(myReview);
+})
+app.delete('/reviews/:id', async(req,res)=>{
+  const id = req.params.id
+  const query= {_id: new ObjectId(id)}
+  const result= await reviewCollection.deleteOne(query)
+  res.send(result)
 })
 
     // Send a ping to confirm a successful connection
