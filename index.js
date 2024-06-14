@@ -37,6 +37,8 @@ async function run() {
     const propertyCollection =client.db('12RealEstate').collection('property')
     const wishCollection = client.db("12RealEstate").collection('wish')
     const reviewCollection = client.db("12RealEstate").collection('review')
+    const offerPropertyCollection = client.db("12RealEstate").collection('offeredProperty')
+    // const advertiseCollection = client.db("12RealEstate").collection('advertise')
 
 
 
@@ -195,6 +197,8 @@ app.get('/property',verifyToken,async(req,res)=>{
   res.send(result)
 })
 
+
+
 app.get('/propertu',verifyToken,verifyAgent,async(req,res)=>{
   const email = req.query.email
   const query= {agentEmail:email}
@@ -287,8 +291,14 @@ app.post('/wishlist', async (req, res) => {
   const result = await wishCollection.insertOne(wishedProperty);
   res.send(result);
 });
+app.get('/wishlists/:id', async(req,res)=>{
+  const id = req.params.id
+  const query= {_id: new ObjectId(id)}
+  const result= await wishCollection.findOne(query)
+  res.send(result)
+})
 
-app.get('/wishlist/:userEmail' , async (req, res) => {
+app.get('/wishlist/:userEmail',verifyToken , async (req, res) => {
   const email= req.params.userEmail;
   const query = { userEmail: (email) }
   const wishedProperty = await wishCollection.find(query).toArray();
@@ -315,6 +325,8 @@ app.get('/reviews', async (req, res) => {
   res.send(review);
 });
 
+
+
 app.get('/review/:propertyId', async (req, res) => {
   const id = req.params.propertyId;
   // console.log(id)
@@ -333,6 +345,72 @@ app.delete('/reviews/:id', async(req,res)=>{
   const id = req.params.id
   const query= {_id: new ObjectId(id)}
   const result= await reviewCollection.deleteOne(query)
+  res.send(result)
+})
+// offered property
+app.post('/offeredProperty',verifyToken, async(req,res)=>{
+  const item = req.body
+  const result = await offerPropertyCollection.insertOne(item)
+  res.send(result)
+  })
+
+  app.get('/offeredProperty/:userEmail',verifyToken,verifyAgent , async (req, res) => {
+    const email= req.params.userEmail;
+    // console.log(email)
+    const query = { agentemail: (email) }
+    const offeredProperty = await offerPropertyCollection.find(query).toArray();
+    res.send(offeredProperty);
+  })
+  app.get('/offeredProperties/:userEmail',verifyToken , async (req, res) => {
+    const email= req.params.userEmail;
+    // console.log(email)
+    const query = { buyeremail: (email) }
+    const offeredProperty = await offerPropertyCollection.find(query).toArray();
+    res.send(offeredProperty);
+  })
+
+
+// offeredproperty accept
+app.patch('/offeredProperty/accept/:id', verifyToken,verifyAgent, async(req,res)=>{
+  const id = req.params.id
+  const filter ={ _id : new ObjectId(id)}
+  const updatedDoc ={
+    $set:{
+      isAccepted:'true'
+    }
+  }
+  const result =await offerPropertyCollection.updateOne(filter,updatedDoc)
+  res.send(result)
+})
+// property reject
+app.patch('/offeredProperty/reject/:id', verifyToken,verifyAgent, async(req,res)=>{
+  const id = req.params.id
+  const filter ={ _id : new ObjectId(id)}
+  const updatedDoc ={
+    $set:{
+      isAccepted:'reject'
+    }
+  }
+  const result =await offerPropertyCollection.updateOne(filter,updatedDoc)
+  res.send(result)
+})
+
+// advertise Post   
+app.patch('/allproperty/advertise/:id', verifyToken,verifyAdmin, async(req,res)=>{
+  const id = req.params.id
+  const filter ={ _id : new ObjectId(id)}
+  const updatedDoc ={
+    $set:{
+      isAdvertise:'true'
+    }
+  }
+  const result =await propertyCollection.updateOne(filter,updatedDoc)
+  res.send(result)
+})              
+
+app.get('/allproperties',async(req,res)=>{
+  const query = { isAdvertise:'true' };
+  const result = await propertyCollection.find(query).toArray();
   res.send(result)
 })
 
