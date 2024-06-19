@@ -3,6 +3,7 @@ const app =express();
 const cors =require('cors')
 var jwt = require('jsonwebtoken');
 require('dotenv').config()
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const port= process.env.PORT || 5000;
 
 // middleware
@@ -38,7 +39,7 @@ async function run() {
     const wishCollection = client.db("12RealEstate").collection('wish')
     const reviewCollection = client.db("12RealEstate").collection('review')
     const offerPropertyCollection = client.db("12RealEstate").collection('offeredProperty')
-    // const advertiseCollection = client.db("12RealEstate").collection('advertise')
+    const paymentCollection = client.db("12RealEstate").collection('payment')
 
 
 
@@ -369,6 +370,12 @@ app.post('/offeredProperty',verifyToken, async(req,res)=>{
     res.send(offeredProperty);
   })
 
+  app.get('/offerproperybyid/:id', async(req,res)=>{
+    const id = req.params.id
+    const query= {_id: new ObjectId(id)}
+    const result= await offerPropertyCollection.findOne(query)
+    res.send(result)
+  })
 
 // offeredproperty accept
 app.patch('/offeredProperty/accept/:id', verifyToken,verifyAgent, async(req,res)=>{
@@ -413,6 +420,54 @@ app.get('/allproperties',async(req,res)=>{
   const result = await propertyCollection.find(query).toArray();
   res.send(result)
 })
+
+
+
+    // payment intent
+    app.post('/create-payment-intent', async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100);
+      // console.log(amount, 'amount inside the intent')
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card']
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret
+      })
+    });
+
+    app.get('/payments/:email', verifyToken, async (req, res) => {
+      const query = { agentemail: req.params.email }
+     
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    })
+
+    app.post('/payments', async (req, res) => {
+      const payment = req.body;
+      const paymentResult = await paymentCollection.insertOne(payment);
+
+    
+      console.log('payment info', payment);
+
+
+      app.patch('/offeredProperty/bought/:id')
+      const id= req.params.id
+      const filter ={ _id : new ObjectId(id)}
+  const updatedDoc ={
+    $set:{
+      isAccepted:'bought'
+    }
+  }
+      const result = await offerPropertyCollection.updateOne(filter,updatedDoc);
+
+      res.send({ paymentResult,result});
+    })
+    
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
