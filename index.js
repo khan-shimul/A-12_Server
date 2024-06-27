@@ -455,8 +455,14 @@ app.get('/allproperties',async(req,res)=>{
       console.log('payment info', payment);
 
 
-      app.patch('/offeredProperty/bought/:id')
+  
+
+      res.send({ paymentResult});
+    })
+    
+    app.patch('/offeredProperty/bought/:id',async (req,res)=>{
       const id= req.params.id
+      console.log('id',req.params)
       const filter ={ _id : new ObjectId(id)}
   const updatedDoc ={
     $set:{
@@ -464,14 +470,13 @@ app.get('/allproperties',async(req,res)=>{
     }
   }
       const result = await offerPropertyCollection.updateOne(filter,updatedDoc);
-
-      res.send({ paymentResult,result});
+      res.send(result)
     })
-    
+     
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
